@@ -55,7 +55,7 @@ public class CoreImportTest {
             for (int i = 0; i < lines.size(); i++) {
                 Matcher matcher = IMPORT_PATTERN.matcher(lines.get(i));
 
-                if (!matcher.matches()) {
+                if (!matcher.lookingAt()) {
                     continue;
                 }
 
@@ -73,9 +73,8 @@ public class CoreImportTest {
     }
 
     private boolean isAllowed(String fullImport) {
-        String normalized = fullImport.replace(".*", "");
 
         return ALLOWED_IMPORT_PREFIXES.stream()
-                .anyMatch(normalized::startsWith);
+                .anyMatch(fullImport::startsWith);
     }
 }
