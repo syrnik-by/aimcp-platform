@@ -1,3 +1,9 @@
+pluginManagement {
+    repositories {
+        maven { url mavenRepoUrl }
+    }
+}
+
 rootProject.name = 'ai-mcp-platform'
 
 include 'core'

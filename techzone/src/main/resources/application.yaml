@@ -1,0 +1,2 @@
+server:
+  port: ${TECHZONE_PORT:8080}

@@ -1,4 +1,10 @@
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+}
+
 dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation project(':core')
     implementation project(':adapters-stub')
     implementation project(':adapters-postgres')
