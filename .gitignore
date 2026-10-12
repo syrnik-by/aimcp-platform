@@ -1,0 +1,17 @@
+# секреты
+.env
+.env.*
+!.env.example
+
+# сборка
+.gradle/
+build/
+out/
+
+# IDE и локальные настройки Claude Code
+.idea/
+*.iml
+.claude/settings.local.json
+
+# логи
+*.log
