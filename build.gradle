@@ -1,0 +1,24 @@
+plugins {
+    id 'java-library'
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    group = 'by.syrnik.aimcp'
+    version = '1.0'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    compileJava {
+        options.encoding = 'UTF-8'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}

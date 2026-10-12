@@ -1,0 +1,8 @@
+rootProject.name = 'ai-mcp-platform'
+
+include 'core'
+include 'adapters-stub'
+include 'adapters-postgres'
+include 'techzone'
+include 'runner'
+
