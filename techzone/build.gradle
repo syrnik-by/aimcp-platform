@@ -8,4 +8,13 @@ dependencies {
     implementation project(':core')
     implementation project(':adapters-stub')
     implementation project(':adapters-postgres')
+    implementation 'com.zaxxer:HikariCP'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    // application.yaml подключает .env относительно рабочего каталога: тесты не должны читать .env разработчика
+    workingDir = "$buildDir/test-work"
+    doFirst { workingDir.mkdirs() }
 }

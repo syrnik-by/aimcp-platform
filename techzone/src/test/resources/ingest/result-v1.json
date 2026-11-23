@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "runId": "310045-regression",
+    "testItRunId": null,
+    "adapterVersion": "1.2.8",
+    "host": "vm-example-01",
+    "ci": {
+      "pipelineId": "310045",
+      "jobId": "4821907",
+      "jobName": "regression 2/4",
+      "commitSha": "3f2a9c1d7e8b4a5f6c0d1e2f3a4b5c6d7e8f9a0b",
+      "ref": "feature/payments",
+      "project": "group/project-tests",
+      "mergeRequestIid": null,
+      "jobUrl": "https://ci.example.invalid/group/project-tests/-/jobs/4821907"
+    }
+  },
+  "test": {
+    "uuid": "0b6f7a4e-8a52-4c1b-9d0e-5a3c2f1e7b90",
+    "externalId": "111111",
+    "workItemIds": ["1234"],
+    "namespace": "ru.example.payments",
+    "className": "PaymentTest",
+    "name": "paymentIsAccepted",
+    "title": "Платёж принимается",
+    "description": "Проверяется приём платежа на тестовом стенде",
+    "status": "FAILED",
+    "startMs": 1760000000000,
+    "stopMs": 1760000004200,
+    "message": "",
+    "labels": ["smoke"],
+    "links": [
+      { "type": "Defect", "title": "BUG-1", "url": "https://tracker.example.invalid/BUG-1" }
+    ],
+    "parameters": { "stand": "test" },
+    "failure": {
+      "kind": "ASSERTION",
+      "type": "org.opentest4j.AssertionFailedError",
+      "message": "expected: <200> but was: <500>",
+      "trace": "org.opentest4j.AssertionFailedError: expected: <200> but was: <500>\n\tat ru.example.payments.PaymentTest.paymentIsAccepted(PaymentTest.java:42)",
+      "suppressed": []
+    },
+    "steps": [
+      {
+        "name": "Открыть форму платежа",
+        "description": null,
+        "status": "PASSED",
+        "startMs": 1760000000100,
+        "stopMs": 1760000001200,
+        "parameters": {},
+        "attachments": [],
+        "failure": null,
+        "steps": []
+      },
+      {
+        "name": "Отправить платёж",
+        "description": "POST /payments",
+        "status": "FAILED",
+        "startMs": 1760000001200,
+        "stopMs": 1760000004100,
+        "parameters": { "amount": "100" },
+        "attachments": [{ "path": "build/attachments/response.txt" }],
+        "failure": {
+          "kind": "ASSERTION",
+          "type": "org.opentest4j.AssertionFailedError",
+          "message": "expected: <200> but was: <500>",
+          "trace": "org.opentest4j.AssertionFailedError: expected: <200> but was: <500>",
+          "suppressed": []
+        },
+        "steps": [
+          {
+            "name": "Проверить код ответа",
+            "description": null,
+            "status": "FAILED",
+            "startMs": 1760000004000,
+            "stopMs": 1760000004100,
+            "parameters": {},
+            "attachments": [],
+            "failure": null,
+            "steps": []
+          }
+        ]
+      }
+    ],
+    "attachments": [{ "path": "build/attachments/screenshot.png" }]
+  }
+}

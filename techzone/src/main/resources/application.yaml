@@ -1,2 +1,15 @@
+# PORTING: локально настройки берутся из .env в корне проекта; в контуре файла нет, переменные приходят из окружения
+spring:
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties]
+
 server:
   port: ${TECHZONE_PORT:8080}
+
+aimcp:
+  history:
+    store: ${AIMCP_HISTORY_STORE:memory}
+  db:
+    url: ${AIMCP_DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:aimcp}}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}

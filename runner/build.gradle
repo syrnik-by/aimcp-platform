@@ -1,3 +1,22 @@
+plugins {
+    id 'application'
+}
+
 dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     implementation project(':core')
+    implementation 'org.yaml:snakeyaml:1.29'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.slf4j:slf4j-api'
+    runtimeOnly 'ch.qos.logback:logback-classic'
+}
+
+application {
+    mainClass = 'by.syrnik.aimcp.runner.RunnerMain'
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Version': project.version
+    }
 }

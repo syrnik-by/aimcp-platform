@@ -1,0 +1,21 @@
+# Пример профиля проекта, версия 1. Контракт: docs/project-profile.md
+profile_version: 1
+project: demo-is
+repo: https://ahcode.example.invalid/group/demo-tests.git
+framework_ver: "2.4.1"
+testit:
+  project_id: "00000000-0000-0000-0000-000000000000"
+  adapter_ver: "1.2.8"
+run:
+  command: [gradle, testInTest, "-Pstand=test"]
+  timeout: PT45M
+env:
+  restricted: false
+data_policy:
+  mask:
+    - 'Bearer\s+[A-Za-z0-9._~+/=-]+'
+    - '\b\d{16}\b'
+  never_send:
+    - "secrets/**"
+    - "**/*.pem"
+owners: [team-qa-demo]
