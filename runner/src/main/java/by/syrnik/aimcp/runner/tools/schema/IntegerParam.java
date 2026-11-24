@@ -6,7 +6,7 @@ public record IntegerParam(String name, String description, boolean required,
         Param.checkName(name);
         Param.checkDescription(description);
         if (minimum != null && maximum != null && minimum > maximum) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Проверьте значения minimum и maximum параметра " + name);
         }
     }
 }

@@ -10,7 +10,7 @@ public record StringArrayParam(String name, String description, boolean required
         Param.checkName(name);
         Param.checkDescription(description);
         if (maxItems < 1) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Проверьте значение поля maxItems параметра " + name);
         }
         Objects.requireNonNull(items);
     }

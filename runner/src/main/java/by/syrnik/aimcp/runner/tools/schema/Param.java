@@ -20,14 +20,14 @@ public sealed interface Param permits StringParam, IntegerParam, BooleanParam, S
         Matcher matcher = NAME.matcher(name);
 
         if (!matcher.matches()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Некорректное имя параметра " + name);
         }
     }
 
     static void checkDescription(String description) {
         Objects.requireNonNull(description);
         if (description.isBlank()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Некорректное описания параметра " + description);
         }
     }
 }

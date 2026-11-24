@@ -12,10 +12,10 @@ public record ToolDescriptor(String name, String description, List<Param> params
         Param.checkName(name);
         Param.checkDescription(description);
         params = List.copyOf(params);
-        HashSet<String> paramsNames = params.stream().map(Param::name).collect(Collectors.toCollection(HashSet::new));
+        HashSet<String> paramsNames = new HashSet<>();
         for (Param p : params) {
             if (!paramsNames.add(p.name())) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(String.valueOf(p));
             }
         }
     }
