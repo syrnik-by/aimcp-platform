@@ -1,8 +1,5 @@
 package by.syrnik.aimcp.runner.tools.schema;
 
-import by.syrnik.aimcp.runner.tools.ErrorCode;
-import by.syrnik.aimcp.runner.tools.ToolException;
-
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,15 +7,19 @@ import java.util.regex.Pattern;
 public sealed interface Param permits StringParam, IntegerParam, BooleanParam, StringArrayParam {
 
     String name();
+
     String description();
+
     boolean required();
+
+    public static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,63}");
 
     static void checkName(String name) {
         Objects.requireNonNull(name);
-        Pattern pattern = Pattern.compile("[a-z][a-z0-9_]{0,63}");
-        Matcher matcher = pattern.matcher(name);
 
-        if (!matcher.find()) {
+        Matcher matcher = NAME.matcher(name);
+
+        if (!matcher.matches()) {
             throw new IllegalArgumentException();
         }
     }

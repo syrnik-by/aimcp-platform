@@ -1,17 +1,22 @@
 package by.syrnik.aimcp.runner.tools;
 
 import by.syrnik.aimcp.runner.tools.schema.Param;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public record ToolDescriptor(String name, String description, List<Param> params,
                              boolean readOnly, boolean idempotent) {
-    public ToolDescriptor(String name, String description, List<Param> params, boolean readOnly, boolean idempotent) {
+    public ToolDescriptor{
         Param.checkName(name);
-        this.name = name;
         Param.checkDescription(description);
-        this.description = description;
-        this.params = List.copyOf(params);
-        this.readOnly = readOnly;
-        this.idempotent = idempotent;
+        params = List.copyOf(params);
+        HashSet<String> paramsNames = params.stream().map(Param::name).collect(Collectors.toCollection(HashSet::new));
+        for (Param p : params) {
+            if (!paramsNames.add(p.name())) {
+                throw new IllegalArgumentException();
+            }
+        }
     }
 }
