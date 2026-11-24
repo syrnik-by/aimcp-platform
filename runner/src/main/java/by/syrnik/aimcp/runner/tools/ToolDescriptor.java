@@ -14,7 +14,7 @@ public record ToolDescriptor(String name, String description, List<Param> params
         HashSet<String> paramsNames = new HashSet<>();
         for (Param p : params) {
             if (!paramsNames.add(p.name())) {
-                throw new IllegalArgumentException(String.valueOf(p));
+                throw new IllegalArgumentException("Дублируется параметр " + p.name());
             }
         }
     }

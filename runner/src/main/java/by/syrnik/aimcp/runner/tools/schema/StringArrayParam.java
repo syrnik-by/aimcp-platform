@@ -9,6 +9,7 @@ public record StringArrayParam(String name, String description, boolean required
     public StringArrayParam{
         Param.checkName(name);
         Param.checkDescription(description);
+        maxItems = maxItems != null ? maxItems : DEFAULT_MAX_ITEMS;
         if (maxItems < 1) {
             throw new IllegalArgumentException("Проверьте значение поля maxItems параметра " + name);
         }
