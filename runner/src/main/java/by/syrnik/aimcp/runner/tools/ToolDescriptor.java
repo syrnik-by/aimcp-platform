@@ -4,11 +4,10 @@ import by.syrnik.aimcp.runner.tools.schema.Param;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record ToolDescriptor(String name, String description, List<Param> params,
                              boolean readOnly, boolean idempotent) {
-    public ToolDescriptor{
+    public ToolDescriptor {
         Param.checkName(name);
         Param.checkDescription(description);
         params = List.copyOf(params);

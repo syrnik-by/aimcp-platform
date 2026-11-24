@@ -27,7 +27,7 @@ public sealed interface Param permits StringParam, IntegerParam, BooleanParam, S
     static void checkDescription(String description) {
         Objects.requireNonNull(description);
         if (description.isBlank()) {
-            throw new IllegalArgumentException("Некорректное описания параметра " + description);
+            throw new IllegalArgumentException("Пустое описание");
         }
     }
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class DescriptorJson {
@@ -25,17 +25,20 @@ public final class DescriptorJson {
     private static void inputSchema(ObjectNode schema, List<Param> params) {
         schema.put("type", "object");
         ObjectNode properties = schema.putObject("properties");
-        HashSet<String> required = new HashSet<>();
+        ArrayList<String> required = new ArrayList<>();
         for (Param p : params) {
             param(properties.putObject(p.name()), p);
             if (p.required()) {
                 required.add(p.name());
             }
         }
-        ArrayNode arrayNode = schema.putArray("required");
-        for (String s : required) {
-            arrayNode.add(s);
+        if (!required.isEmpty()) {
+            ArrayNode arrayNode = schema.putArray("required");
+            for (String s : required) {
+                arrayNode.add(s);
+            }
         }
+
         schema.put("additionalProperties", false);
     }
 
@@ -47,14 +50,19 @@ public final class DescriptorJson {
         } else if (p instanceof IntegerParam i) {
             node.put("type", "integer");
             node.put("description", i.description());
-            node.put("minimum", i.minimum());
-            node.put("maximum", i.maximum());
+            if (i.minimum() != null) {
+                node.put("minimum", i.minimum());
+            }
+            if (i.maximum() != null) {
+                node.put("maximum", i.maximum());
+            }
         } else if (p instanceof BooleanParam b) {
             node.put("type", "boolean");
             node.put("description", b.description());
         } else if (p instanceof StringArrayParam a) {
             node.put("type", "array");
             node.put("description", a.description());
+            node.put("maxItems", a.maxItems());
             ObjectNode items = node.putObject("items");
             items.put("type", "string");
             stringRules(items, a.items());
@@ -66,7 +74,9 @@ public final class DescriptorJson {
             node.put("minLength", r.minLength());
         }
         node.put("maxLength", r.maxLength());
-        node.put("pattern", r.pattern());
+        if (r.pattern() != null) {
+            node.put("pattern", r.pattern());
+        }
         if (!r.enumValues().isEmpty()) {
             ArrayNode arrayNode = node.putArray("enum");
             for (String s : r.enumValues()) {
