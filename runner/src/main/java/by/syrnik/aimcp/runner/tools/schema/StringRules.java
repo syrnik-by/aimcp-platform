@@ -15,12 +15,13 @@ public record StringRules(Integer minLength, Integer maxLength,
     public StringRules {
 
         int effectiveMax = maxLength != null ? maxLength : DEFAULT_MAX_LENGTH;
-        if (minLength != null) {
-            throw new IllegalArgumentException("Проверьте значение minLength параметра");
+        if ( effectiveMax < 1) {
+            throw new IllegalArgumentException("Проверьте значение maxLength параметра");
         }
-        if (minLength < 0 || effectiveMax < 1 || minLength > effectiveMax) {
-            throw new IllegalArgumentException("Проверьте значения minLength и maxLength параметра");
+        if (minLength != null && (minLength < 0 || minLength > effectiveMax)) {
+                throw new IllegalArgumentException("Проверьте значения minLength и maxLength параметра");
         }
+
         maxLength = effectiveMax;
 
         if (pattern != null) {
