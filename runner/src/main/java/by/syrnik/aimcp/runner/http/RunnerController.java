@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,22 +62,29 @@ public class RunnerController {
         return respond(Envelope.ok(root, masking));
     }
 
-    @PostMapping(value = "/tools/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<byte[]> call(@PathVariable String name,
+    @PostMapping(value = "/tools/{name}")
+    public ResponseEntity<byte[]> call( @RequestHeader(value = "Content-Type", required = false) String contentType,
+                                        @PathVariable String name,
                                        @RequestBody(required = false) byte[] body) {
+
         try {
+            MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_JSON);
             Tool tool = registry.find(name).orElseThrow(() -> new ToolException(ErrorCode.UNKNOWN_TOOL, "инструмент не найден"));
             JsonNode args = parse(body);
             Map<String, Object> valid = ArgsValidator.validate(tool.descriptor(), args);
             return respond(Envelope.ok(tool.call(valid), masking));
         } catch (ToolException e) {
             return respond(Envelope.error(e, masking));
+        } catch (InvalidMediaTypeException e) {
+            return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, e.getMessage()), masking));
+        } catch (RuntimeException e) {
+            return respond(Envelope.error(new ToolException(ErrorCode.INTERNAL, ""), masking));
         }
     }
 
     private JsonNode parse(byte[] body) {
         if (body == null || body.length == 0) {
-            throw new ToolException(ErrorCode.INVALID_REQUEST, "Тело пустое");
+            throw new ToolException(ErrorCode.INVALID_REQUEST, "тело пустое");
         }
         JsonNode bodyNode;
         try {
@@ -85,11 +93,11 @@ public class RunnerController {
                     .with(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                     .readTree(body);
         } catch (IOException e) {
-            throw new ToolException(ErrorCode.INVALID_REQUEST, "Тело не JSON");
+            throw new ToolException(ErrorCode.INVALID_REQUEST, "тело не JSON");
         }
 
         if (!bodyNode.isObject()) {
-            throw new ToolException(ErrorCode.INVALID_REQUEST, "Тело должно быть объектом");
+            throw new ToolException(ErrorCode.INVALID_REQUEST, "тело должно быть объектом");
         }
 
         return bodyNode;
