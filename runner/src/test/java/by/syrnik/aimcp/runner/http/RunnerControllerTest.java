@@ -30,6 +30,7 @@ class RunnerControllerTest {
     private static final int LIMIT = 1 << 20;
     private static final String PROJECT = "at";
     private static final String AGENT_VERSION = "0.9.1";
+    private static final int MAX_REQUEST_BYTE = 64;
 
     private static final MaskingPort MARK = text -> {
         if (text.contains("BOOM")) {
@@ -66,7 +67,7 @@ class RunnerControllerTest {
     private MockMvc mvc(Tool... tools) {
         RunnerController controller = new RunnerController(
                 new ToolRegistry(List.of(tools)), MAPPER, MARK,
-                new ResponseWriter(MAPPER, LIMIT, MARK), PROJECT, AGENT_VERSION, 10000000);
+                new ResponseWriter(MAPPER, LIMIT, MARK), PROJECT, AGENT_VERSION, MAX_REQUEST_BYTE);
         return MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -347,7 +348,7 @@ class RunnerControllerTest {
                 args -> JsonNodeFactory.instance.objectNode().put("log", "x".repeat(4096)));
 
         RunnerController controller = new RunnerController(new ToolRegistry(List.of(big)), MAPPER, MARK,
-                new ResponseWriter(MAPPER, 512, MARK), PROJECT, AGENT_VERSION, 10000000);
+                new ResponseWriter(MAPPER, 512, MARK), PROJECT, AGENT_VERSION, MAX_REQUEST_BYTE);
 
         MockMvcBuilders.standaloneSetup(controller).build()
                 .perform(post("/v1/tools/read_run_logs").contentType(MediaType.APPLICATION_JSON).content("{}"))

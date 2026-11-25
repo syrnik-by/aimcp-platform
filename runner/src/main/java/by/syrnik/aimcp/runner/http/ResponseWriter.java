@@ -6,10 +6,12 @@ import by.syrnik.aimcp.runner.tools.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
 
 import static by.syrnik.aimcp.runner.tools.ErrorCode.RESPONSE_TOO_LARGE;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 public final class ResponseWriter {
     static final String TOO_LARGE_MESSAGE = "ответ больше лимита";
@@ -49,5 +51,10 @@ public final class ResponseWriter {
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("не удалось сериализовать ответ");
         }
+    }
+
+    public ResponseEntity<byte[]> toEntity(Envelope.Reply reply) {
+        ResponseWriter.Response r = write(reply);
+        return ResponseEntity.status(r.httpStatus()).contentType(APPLICATION_JSON).body(r.body());
     }
 }

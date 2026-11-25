@@ -4,7 +4,7 @@ import by.syrnik.aimcp.core.masking.MaskingPort;
 import by.syrnik.aimcp.runner.tools.Envelope;
 import by.syrnik.aimcp.runner.tools.ErrorCode;
 import by.syrnik.aimcp.runner.tools.ToolException;
-import org.springframework.http.HttpStatus;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,8 +16,10 @@ import java.util.Objects;
 @RestControllerAdvice
 public class ErrorAdvice {
 
-    public ResponseWriter responseWriter;
-    public MaskingPort maskingPort;
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(ErrorAdvice.class);
+
+    private final ResponseWriter responseWriter;
+    private final MaskingPort maskingPort;
 
     public ErrorAdvice(ResponseWriter writer, MaskingPort masking) {
         this.responseWriter = Objects.requireNonNull(writer, "writer");
@@ -26,19 +28,19 @@ public class ErrorAdvice {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<byte[]> notFound() {
-        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.UNKNOWN_TOOL, "путь отсутствует"), maskingPort));
-        return new ResponseEntity<>(response.body(), HttpStatus.valueOf(response.httpStatus()));
+        return responseWriter.toEntity(Envelope.error(new ToolException(ErrorCode.NOT_FOUND, "путь отсутствует"), maskingPort));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<byte[]> methodNotAllowed(HttpRequestMethodNotSupportedException e) {
-        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.METHOD_NOT_ALLOWED, e.getMessage()), maskingPort));
-        return new ResponseEntity<>(response.body(), HttpStatus.valueOf(response.httpStatus()));
+        ResponseEntity<byte[]> responseEntity =  responseWriter.toEntity(Envelope.error(new ToolException(ErrorCode.METHOD_NOT_ALLOWED, "метод не поддерживается"), maskingPort));
+        responseEntity.getHeaders().setAllow(Objects.requireNonNull(e.getSupportedHttpMethods()));
+        return responseEntity;
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<byte[]> internal(Exception e) {
-        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.INTERNAL, e.getMessage()), maskingPort));
-        return new ResponseEntity<>(response.body(), HttpStatus.valueOf(response.httpStatus()));
+        log.error("Ошибка вызова метода : {}", e.getClass().getName());
+        return responseWriter.toEntity(Envelope.error(new ToolException(ErrorCode.INTERNAL, ""), maskingPort));
     }
 }

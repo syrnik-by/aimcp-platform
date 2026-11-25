@@ -42,7 +42,11 @@ public class RunnerController {
         this.writer = Objects.requireNonNull(writer, "writer");
         this.project = Objects.requireNonNull(project, "project");
         this.agentVersion = Objects.requireNonNull(agentVersion, "agentVersion");
-        this.maxRequestBytes = maxRequestBytes;
+        if (maxRequestBytes >= 1) {
+            this.maxRequestBytes = maxRequestBytes;
+        } else {
+            throw new IllegalArgumentException("неверно указан лимит размера запроса");
+        }
     }
 
     @GetMapping("/info")
@@ -82,8 +86,6 @@ public class RunnerController {
             JsonNode args = parse(in.readNBytes(maxRequestBytes + 1));
             Map<String, Object> valid = ArgsValidator.validate(tool.descriptor(), args);
             return respond(Envelope.ok(tool.call(valid), masking));
-        } catch (OutOfMemoryError e) {
-            return respond(Envelope.error(new ToolException(ErrorCode.REQUEST_TOO_LARGE, "лимит запроса превышен"), masking));
         } catch (ToolException e) {
             return respond(Envelope.error(e, masking));
         } catch (InvalidMediaTypeException e) {
@@ -97,6 +99,9 @@ public class RunnerController {
     }
 
     private JsonNode parse(byte[] body) {
+        if (body.length > maxRequestBytes) {
+            throw new ToolException(ErrorCode.REQUEST_TOO_LARGE, "лимит запроса превышен");
+        }
         if (body == null || body.length == 0) {
             throw new ToolException(ErrorCode.INVALID_REQUEST, "тело пустое");
         }
@@ -118,7 +123,6 @@ public class RunnerController {
     }
 
     private ResponseEntity<byte[]> respond(Envelope.Reply reply) {
-        ResponseWriter.Response r = writer.write(reply);
-        return ResponseEntity.status(r.httpStatus()).contentType(APPLICATION_JSON).body(r.body());
+        return writer.toEntity(reply);
     }
 }
