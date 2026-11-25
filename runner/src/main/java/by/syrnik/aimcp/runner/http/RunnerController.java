@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
 
@@ -65,18 +66,22 @@ public class RunnerController {
     @PostMapping(value = "/tools/{name}")
     public ResponseEntity<byte[]> call( @RequestHeader(value = "Content-Type", required = false) String contentType,
                                         @PathVariable String name,
-                                       @RequestBody(required = false) byte[] body) {
+                                        InputStream in) {
 
         try {
-            MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_JSON);
+            if (!MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_JSON)) {
+                throw new ToolException(ErrorCode.INVALID_REQUEST, "неверный Content-Type");
+            }
             Tool tool = registry.find(name).orElseThrow(() -> new ToolException(ErrorCode.UNKNOWN_TOOL, "инструмент не найден"));
-            JsonNode args = parse(body);
+            JsonNode args = parse(in.readAllBytes());
             Map<String, Object> valid = ArgsValidator.validate(tool.descriptor(), args);
             return respond(Envelope.ok(tool.call(valid), masking));
         } catch (ToolException e) {
             return respond(Envelope.error(e, masking));
         } catch (InvalidMediaTypeException e) {
-            return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, e.getMessage()), masking));
+            return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, "неверный Content-Type"), masking));
+        } catch (IOException e) {
+            return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, "ошибка чтение body запроса"), masking));
         } catch (RuntimeException e) {
             return respond(Envelope.error(new ToolException(ErrorCode.INTERNAL, ""), masking));
         }
