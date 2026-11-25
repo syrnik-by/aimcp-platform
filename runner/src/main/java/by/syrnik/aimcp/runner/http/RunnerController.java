@@ -1,0 +1,102 @@
+package by.syrnik.aimcp.runner.http;
+
+import by.syrnik.aimcp.core.masking.MaskingPort;
+import by.syrnik.aimcp.runner.tools.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
+@RestController
+@RequestMapping("/v1")
+public class RunnerController {
+    private final ToolRegistry registry;
+    private final ObjectMapper mapper;
+    private final MaskingPort masking;
+    private final ResponseWriter writer;
+    private final String project;
+    private final String agentVersion;
+
+    public RunnerController(ToolRegistry registry, ObjectMapper mapper, MaskingPort masking, ResponseWriter writer, String project, String agentVersion) {
+        this.registry = Objects.requireNonNull(registry,"registry");
+        this.mapper = Objects.requireNonNull(mapper,"mapper");
+        this.masking = Objects.requireNonNull(masking,"masking");
+        this.writer = Objects.requireNonNull(writer,"writer");
+        this.project = Objects.requireNonNull(project,"project");
+        this.agentVersion = Objects.requireNonNull(agentVersion,"agentVersion");
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<byte[]> info() {
+        ObjectNode root = mapper.createObjectNode();
+        ArrayNode contractVersions = root.putArray("contractVersions");
+        contractVersions.add(1);
+        root.put("agentVersion", agentVersion);
+        root.put("project", project);
+        ArrayNode arrayNode = root.putArray("tools");
+        for (Tool tool : registry.all()) {
+            arrayNode.add(tool.descriptor().name());
+        }
+        return respond(Envelope.ok(root, masking));
+    }
+
+    @GetMapping("/tools")
+    public ResponseEntity<byte[]> tools() {
+        ObjectNode root = mapper.createObjectNode();
+        ArrayNode tools = root.putArray("tools");
+        for (Tool tool : registry.all()) {
+            tools.add(DescriptorJson.write(tool.descriptor(), mapper));
+        }
+        return respond(Envelope.ok(root, masking));
+    }
+
+    @PostMapping(value = "/tools/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> call(@PathVariable String name,
+                                       @RequestBody(required = false) byte[] body) {
+        try {
+            Tool tool = registry.find(name).orElseThrow(() -> new ToolException(ErrorCode.UNKNOWN_TOOL, "инструмент не найден"));
+            JsonNode args = parse(body);
+            Map<String, Object> valid = ArgsValidator.validate(tool.descriptor(), args);
+            return respond(Envelope.ok(tool.call(valid), masking));
+        } catch (ToolException e) {
+            return respond(Envelope.error(e, masking));
+        }
+    }
+
+    private JsonNode parse(byte[] body) {
+        if (body == null || body.length == 0) {
+            throw new ToolException(ErrorCode.INVALID_REQUEST, "Тело пустое");
+        }
+        JsonNode bodyNode;
+        try {
+            bodyNode = mapper.reader()
+                    .with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+                    .with(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+                    .readTree(body);
+        } catch (IOException e) {
+            throw new ToolException(ErrorCode.INVALID_REQUEST, "Тело не JSON");
+        }
+
+        if (!bodyNode.isObject()) {
+            throw new ToolException(ErrorCode.INVALID_REQUEST, "Тело должно быть объектом");
+        }
+
+        return bodyNode;
+    }
+
+    private ResponseEntity<byte[]> respond(Envelope.Reply reply) {
+        ResponseWriter.Response r = writer.write(reply);
+        return ResponseEntity.status(r.httpStatus()).contentType(APPLICATION_JSON).body(r.body());
+    }
+}
