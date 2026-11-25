@@ -45,7 +45,12 @@ public final class Envelope {
         if (e.code() == ErrorCode.MASKING_FAILED) {
             return failure(ErrorCode.MASKING_FAILED, MASKING_FAILED_MESSAGE);
         }
-        return failure(e.code(), masking.mask(e.getMessage()));
+
+        try {
+            return failure(e.code(), masking.mask(e.getMessage()));
+        } catch (MaskingException exception) {
+            return failure(ErrorCode.MASKING_FAILED, MASKING_FAILED_MESSAGE);
+        }
     }
 
     private static JsonNode maskNode(JsonNode node, MaskingPort masking) {
@@ -69,7 +74,7 @@ public final class Envelope {
             return arrayNode;
         }
         if (node.isBoolean() || node.isNumber() || node.isNull()) {
-            return F.textNode(node.textValue());
+            return node;
         }
         throw new IllegalStateException("неподдерживаемый узел " + node.getNodeType());
     }

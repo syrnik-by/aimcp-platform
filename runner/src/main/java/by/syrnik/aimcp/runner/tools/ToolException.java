@@ -7,12 +7,12 @@ public class ToolException extends RuntimeException {
     private final ErrorCode code;
 
     public ToolException(ErrorCode code, String message) {
-        super(message);
+        super(requireNonNull(message, "message"));
         this.code = requireNonNull(code, "code");
     }
 
     public ToolException(ErrorCode code, String message, Throwable cause) {
-        super(requireNonNull(message), cause);
+        super(requireNonNull(message, "message"), cause);
         this.code = requireNonNull(code, "code");
     }
 
