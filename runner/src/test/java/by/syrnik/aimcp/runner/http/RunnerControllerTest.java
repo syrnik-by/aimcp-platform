@@ -66,7 +66,7 @@ class RunnerControllerTest {
     private MockMvc mvc(Tool... tools) {
         RunnerController controller = new RunnerController(
                 new ToolRegistry(List.of(tools)), MAPPER, MARK,
-                new ResponseWriter(MAPPER, LIMIT, MARK), PROJECT, AGENT_VERSION);
+                new ResponseWriter(MAPPER, LIMIT, MARK), PROJECT, AGENT_VERSION, 10000000);
         return MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -347,7 +347,7 @@ class RunnerControllerTest {
                 args -> JsonNodeFactory.instance.objectNode().put("log", "x".repeat(4096)));
 
         RunnerController controller = new RunnerController(new ToolRegistry(List.of(big)), MAPPER, MARK,
-                new ResponseWriter(MAPPER, 512, MARK), PROJECT, AGENT_VERSION);
+                new ResponseWriter(MAPPER, 512, MARK), PROJECT, AGENT_VERSION, 10000000);
 
         MockMvcBuilders.standaloneSetup(controller).build()
                 .perform(post("/v1/tools/read_run_logs").contentType(MediaType.APPLICATION_JSON).content("{}"))

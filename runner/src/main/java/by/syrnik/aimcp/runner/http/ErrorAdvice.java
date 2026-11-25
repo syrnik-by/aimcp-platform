@@ -32,13 +32,13 @@ public class ErrorAdvice {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<byte[]> methodNotAllowed(HttpRequestMethodNotSupportedException e) {
-        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.METHOD_NOT_ALLOWED, "путь не разрешен"), maskingPort));
+        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.METHOD_NOT_ALLOWED, e.getMessage()), maskingPort));
         return new ResponseEntity<>(response.body(), HttpStatus.valueOf(response.httpStatus()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<byte[]> internal(Exception e) {
-        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.INTERNAL, ""), maskingPort));
+        ResponseWriter.Response response = responseWriter.write(Envelope.error(new ToolException(ErrorCode.INTERNAL, e.getMessage()), maskingPort));
         return new ResponseEntity<>(response.body(), HttpStatus.valueOf(response.httpStatus()));
     }
 }
