@@ -1,6 +1,6 @@
 package by.syrnik.aimcp.runner.tools;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 public class ToolException extends RuntimeException {
 
@@ -8,12 +8,12 @@ public class ToolException extends RuntimeException {
 
     public ToolException(ErrorCode code, String message) {
         super(message);
-        this.code = Objects.requireNonNull(code, "code");
+        this.code = requireNonNull(code, "code");
     }
 
     public ToolException(ErrorCode code, String message, Throwable cause) {
-        super(message, cause);
-        this.code = Objects.requireNonNull(code, "code");
+        super(requireNonNull(message), cause);
+        this.code = requireNonNull(code, "code");
     }
 
     public ErrorCode code() {
