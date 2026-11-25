@@ -5,6 +5,7 @@ import by.syrnik.aimcp.runner.tools.Envelope;
 import by.syrnik.aimcp.runner.tools.ErrorCode;
 import by.syrnik.aimcp.runner.tools.ToolException;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,9 +34,11 @@ public class ErrorAdvice {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<byte[]> methodNotAllowed(HttpRequestMethodNotSupportedException e) {
-        ResponseEntity<byte[]> responseEntity =  responseWriter.toEntity(Envelope.error(new ToolException(ErrorCode.METHOD_NOT_ALLOWED, "метод не поддерживается"), maskingPort));
-        responseEntity.getHeaders().setAllow(Objects.requireNonNull(e.getSupportedHttpMethods()));
-        return responseEntity;
+        ResponseEntity<byte[]> base =  responseWriter.toEntity(Envelope.error(new ToolException(ErrorCode.METHOD_NOT_ALLOWED, "метод не поддерживается"), maskingPort));
+        return ResponseEntity.status(base.getStatusCode())
+                .headers(base.getHeaders())
+                .allow(Objects.requireNonNull(e.getSupportedHttpMethods()).toArray(HttpMethod[]::new))
+                .body(base.getBody());
     }
 
     @ExceptionHandler(Exception.class)
