@@ -1,8 +1,5 @@
-package by.syrnik.aimcp.runner.http;
+package by.syrnik.aimcp.runner.tools;
 
-import by.syrnik.aimcp.runner.tools.Tool;
-import by.syrnik.aimcp.runner.tools.ToolDescriptor;
-import by.syrnik.aimcp.runner.tools.ToolRegistry;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;

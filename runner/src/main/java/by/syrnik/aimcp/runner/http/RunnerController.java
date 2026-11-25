@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,20 +24,25 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @RestController
 @RequestMapping("/v1")
 public class RunnerController {
+
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(RunnerController.class);
+
     private final ToolRegistry registry;
     private final ObjectMapper mapper;
     private final MaskingPort masking;
     private final ResponseWriter writer;
     private final String project;
     private final String agentVersion;
+    private final int maxRequestBytes;
 
-    public RunnerController(ToolRegistry registry, ObjectMapper mapper, MaskingPort masking, ResponseWriter writer, String project, String agentVersion) {
-        this.registry = Objects.requireNonNull(registry,"registry");
-        this.mapper = Objects.requireNonNull(mapper,"mapper");
-        this.masking = Objects.requireNonNull(masking,"masking");
-        this.writer = Objects.requireNonNull(writer,"writer");
-        this.project = Objects.requireNonNull(project,"project");
-        this.agentVersion = Objects.requireNonNull(agentVersion,"agentVersion");
+    public RunnerController(ToolRegistry registry, ObjectMapper mapper, MaskingPort masking, ResponseWriter writer, String project, String agentVersion, int maxRequestBytes) {
+        this.registry = Objects.requireNonNull(registry, "registry");
+        this.mapper = Objects.requireNonNull(mapper, "mapper");
+        this.masking = Objects.requireNonNull(masking, "masking");
+        this.writer = Objects.requireNonNull(writer, "writer");
+        this.project = Objects.requireNonNull(project, "project");
+        this.agentVersion = Objects.requireNonNull(agentVersion, "agentVersion");
+        this.maxRequestBytes = maxRequestBytes;
     }
 
     @GetMapping("/info")
@@ -65,17 +71,19 @@ public class RunnerController {
 
     @PostMapping(value = "/tools/{name}")
     public ResponseEntity<byte[]> call(@RequestHeader(value = "Content-Type", required = false) String contentType,
-                                        @PathVariable String name,
-                                        InputStream in) {
+                                       @PathVariable String name,
+                                       InputStream in) {
 
         try {
             if (!MediaType.parseMediaType(contentType).isCompatibleWith(APPLICATION_JSON)) {
                 throw new ToolException(ErrorCode.INVALID_REQUEST, "неверный Content-Type");
             }
             Tool tool = registry.find(name).orElseThrow(() -> new ToolException(ErrorCode.UNKNOWN_TOOL, "инструмент не найден"));
-            JsonNode args = parse(in.readAllBytes());
+            JsonNode args = parse(in.readNBytes(maxRequestBytes + 1));
             Map<String, Object> valid = ArgsValidator.validate(tool.descriptor(), args);
             return respond(Envelope.ok(tool.call(valid), masking));
+        } catch (OutOfMemoryError e) {
+            return respond(Envelope.error(new ToolException(ErrorCode.REQUEST_TOO_LARGE, "лимит запроса превышен"), masking));
         } catch (ToolException e) {
             return respond(Envelope.error(e, masking));
         } catch (InvalidMediaTypeException e) {
@@ -83,6 +91,7 @@ public class RunnerController {
         } catch (IOException e) {
             return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, "не удалось прочитать тело запроса"), masking));
         } catch (RuntimeException e) {
+            log.error("Ошибка вызова инструмента {} : {}", name, e.getClass().getName());
             return respond(Envelope.error(new ToolException(ErrorCode.INTERNAL, ""), masking));
         }
     }
