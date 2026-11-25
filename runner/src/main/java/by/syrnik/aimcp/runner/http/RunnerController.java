@@ -64,7 +64,7 @@ public class RunnerController {
     }
 
     @PostMapping(value = "/tools/{name}")
-    public ResponseEntity<byte[]> call( @RequestHeader(value = "Content-Type", required = false) String contentType,
+    public ResponseEntity<byte[]> call(@RequestHeader(value = "Content-Type", required = false) String contentType,
                                         @PathVariable String name,
                                         InputStream in) {
 
@@ -81,7 +81,7 @@ public class RunnerController {
         } catch (InvalidMediaTypeException e) {
             return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, "неверный Content-Type"), masking));
         } catch (IOException e) {
-            return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, "ошибка чтение body запроса"), masking));
+            return respond(Envelope.error(new ToolException(ErrorCode.INVALID_REQUEST, "не удалось прочитать тело запроса"), masking));
         } catch (RuntimeException e) {
             return respond(Envelope.error(new ToolException(ErrorCode.INTERNAL, ""), masking));
         }
