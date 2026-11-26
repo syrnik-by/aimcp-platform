@@ -31,7 +31,7 @@ public class RunnerSettings {
             throw new IllegalArgumentException("проверьте значения лимитов запросов");
         }
 
-        if (!maskingBudget.isNegative() && !maskingBudget.isZero()) {
+        if (maskingBudget != null && !maskingBudget.isNegative() && !maskingBudget.isZero()) {
             this.maskingBudget = maskingBudget;
         } else {
             throw new IllegalArgumentException("бюджет маскирования должен быть больше 0");
