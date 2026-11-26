@@ -10,6 +10,7 @@ import by.syrnik.aimcp.runner.tools.Tool;
 import by.syrnik.aimcp.runner.tools.ToolRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 @Configuration
+@EnableConfigurationProperties(RunnerSettings.class)
 public class RunnerConfig {
 
     @Bean

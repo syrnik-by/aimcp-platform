@@ -23,3 +23,7 @@ jar {
         attributes 'Implementation-Version': project.version
     }
 }
+
+springBoot {
+    buildInfo()
+}

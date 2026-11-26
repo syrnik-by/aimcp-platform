@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-@RestController
 @RequestMapping("/v1")
 public class RunnerController {
 
