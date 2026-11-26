@@ -1,0 +1,13 @@
+server:
+  address: ${AIMCP_RUNNER_HOST:127.0.0.1}
+  port: ${AIMCP_RUNNER_PORT:8090}
+spring:
+  main.banner-mode: off
+  mvc.throw-exception-if-no-handler-found: true
+  web.resources.add-mappings: false
+aimcp.runner:
+  token: ${AIMCP_RUNNER_TOKEN:}
+  profile: ${AIMCP_RUNNER_PROFILE:at-profile.yaml}
+  max-request-bytes: 65536
+  max-response-bytes: 1048576
+  masking-budget: 5s
